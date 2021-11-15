@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: Shopping List
+  description: 'This is a proposal for the Shopping List project.'
+  version: 1.0.0
+servers:
+- url: https://shoppinglist.example.com/v1
+- url: http://shoppinglist.example.com/v1
+tags:
+- name: items
+  description: Everything about shopping list items
+paths:
+  /items:
+    get:
+      tags:
+      - items
+      summary: Get recent created shopping list items
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: The maximum numbers of items to return
+          example: 100
+          
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        400:
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        500:
+          description: An error occured while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+                
+    post:
+      tags:
+      - items
+      summary: Add a new item to the shopping list
+      requestBody:
+        description: Item that needs to be added to the shopping list
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemWithNoIdSet'
+        required: true
+      responses:
+        200:
+          description: Successful operation. Return added item with id value set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        400:
+          description: Invalid body
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/BadRequest'
+        500:
+          description: An error occured while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+          
+  /items/{itemId}:
+    get:
+      tags:
+      - items
+      summary: Find item in the shopping list by ID
+      description: Returns a single Item
+      parameters:
+      - name: itemId
+        in: path
+        description: ID of the item to return
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 6548004
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        404:
+          description: Item does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        500:
+          description: An error occured while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    put:
+      tags:
+      - items
+      summary: Update an item in the shoppinglist with body data
+      description: If item ist not found, an error is returned. A new item will not be created.
+      parameters:
+      - name: itemId
+        in: path
+        description: ID of the item that needs to be updated
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 6548004
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              items:
+                $ref: '#/components/schemas/ItemUpdated'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemUpdated'
+        400:
+          description: Invalid body supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        404:
+          description: Item does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        405:
+          description: Mismatched ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        500:
+          description: An error occured while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    delete:
+      tags:
+      - items
+      summary: Delete an item in the shopping list
+      parameters:
+      - name: itemId
+        in: path
+        description: ID of the item that needs to be deleted
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 6548004
+      responses:
+        200:
+          description: Successful operation. Will be also returned, if item does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        500:
+          description: An error occured while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 6548004
+        name:
+          type: string
+          example: "Milk"
+        quantity:
+          type: integer
+          format: int32
+          example: 2
+        created:
+          type: string
+          format: YYYY-MM-DDThh:mm:ss
+          example: "2021-11-15T15:26:14"
+        complete:
+          type: boolean
+          default: false
+          example: false
+    ItemWithNoIdSet:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 0
+        name:
+          type: string
+          example: "Milk"
+        quantity:
+          type: integer
+          format: int32
+          example: 2
+        created:
+          type: string
+          format: YYYY-MM-DDThh:mm:ss
+          example: "2021-11-15T15:26:14"
+        complete:
+          type: boolean
+          default: false
+          example: false
+    ItemUpdated:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 6548004
+        name:
+          type: string
+          example: "Milk"
+        quantity:
+          type: integer
+          format: int32
+          example: 10
+        created:
+          type: string
+          format: YYYY-MM-DDThh:mm:ss
+          example: "2021-11-15T15:26:14"
+        complete:
+          type: boolean
+          default: false
+          example: true
+    InternalServerError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 500
+        error:
+          type: string
+          example: Internal Server Error
+        message:
+          type: string
+          example: Could not connect to Database.
+    BadRequest:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Invalid date format in 'created'.
+    NotFound:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 404
+        error:
+          type: string
+          example: Not Found
+        message:
+          type: string
+          example: Item does not exist.
+    Conflict:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 409
+        error:
+          type: string
+          example: Conflict
+        message:
+          type: string
+          example: Item id in path does not match with id in body.
