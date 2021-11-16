@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Shopping List
   description: 'This is a proposal for the Shopping List project.'
-  version: 1.0.0
+  version: 1.0.1
 servers:
 - url: https://shoppinglist.example.com/v1
 - url: http://shoppinglist.example.com/v1
