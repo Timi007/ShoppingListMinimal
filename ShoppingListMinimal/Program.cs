@@ -1,32 +1,85 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using ShoppingListMinimal;
+using ShoppingListMinimal.Model;
 
-// Add services to the container.
+// Setup application
+var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddConsole();
+
+builder.Services.AddDbContext<ShoppingListContext>(o => o.UseInMemoryDatabase(databaseName: "ShoppingList"));
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-var summaries = new[]
+// Exception handling
+app.UseExceptionHandler(builder => builder.Run(async (HttpContext context) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var exception = context.Features
+        .Get<IExceptionHandlerPathFeature>()?
+        .Error;
 
-app.MapGet("/weatherforecast", () =>
+    var response = exception switch
+    {
+        StatusCodeException statusCodeEx => new ApiResponse
+        {
+            StatusCode = statusCodeEx.StatusCode,
+            Message = ReasonPhrases.GetReasonPhrase(statusCodeEx.StatusCode),
+            Error = statusCodeEx.Message,
+        },
+        BadHttpRequestException badRequestEx => new ApiResponse
+        {
+            StatusCode = badRequestEx.StatusCode,
+            Message = ReasonPhrases.GetReasonPhrase(badRequestEx.StatusCode),
+            Error = badRequestEx.InnerException?.Message ?? badRequestEx.Message,
+        },
+        _ => new ApiResponse
+        {
+            StatusCode = StatusCodes.Status500InternalServerError,
+            Message = ReasonPhrases.GetReasonPhrase(StatusCodes.Status500InternalServerError),
+            Error = exception?.Message ?? "Could not identify exception",
+        }
+    };
+
+    app.Logger.LogError(response.Error);
+
+    context.Response.StatusCode = response.StatusCode;
+    await context.Response.WriteAsJsonAsync(response);
+}));
+
+// REST API
+app.MapGet("/items", async (HttpContext context, ShoppingListContext dbContext) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-       new WeatherForecast
-       (
-           DateTime.Now.AddDays(index),
-           Random.Shared.Next(-20, 55),
-           summaries[Random.Shared.Next(summaries.Length)]
-       ))
-        .ToArray();
-    return forecast;
+    if (!context.Request.Query.TryGetValue("limit", out var limitString))
+    {
+        throw new StatusCodeException(StatusCodes.Status400BadRequest, "Missing limit query parameter");
+    }
+
+    if (!int.TryParse(limitString, out var limit))
+    {
+        throw new StatusCodeException(StatusCodes.Status400BadRequest, "Could not parse limit query parameter to integer");
+    }
+
+    return await dbContext.Items
+        .OrderBy(item => item.Created)
+        .Take(limit)
+        .ToListAsync();
 });
 
-app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+app.MapPost("/items", async (HttpContext context, ShoppingListContext dbContext, Item shoppingListItem) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    await dbContext.AddAsync(shoppingListItem);
+    await dbContext.SaveChangesAsync();
+
+    context.Response.StatusCode = StatusCodes.Status201Created;
+    return shoppingListItem;
+});
+
+app.MapFallback((HttpContext context) =>
+{
+    throw new StatusCodeException(StatusCodes.Status404NotFound, $"Could not find resource \"{context.Request.Path}\"");
+});
+
+
+app.Run();
