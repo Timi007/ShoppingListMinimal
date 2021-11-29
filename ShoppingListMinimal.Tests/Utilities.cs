@@ -1,6 +1,7 @@
 ﻿using ShoppingListMinimal.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ShoppingListMinimal.Tests;
 
@@ -12,10 +13,22 @@ internal class Utilities
         dbContext.SaveChanges();
     }
 
+    public static async Task InitializeDatabaseForTestsAsync(ShoppingListContext dbContext)
+    {
+        await dbContext.Items.AddRangeAsync(GetTestItems());
+        await dbContext.SaveChangesAsync();
+    }
+
     public static void ReinitializeDatabaseForTests(ShoppingListContext dbContext)
     {
         dbContext.Items.RemoveRange(dbContext.Items);
         InitializeDatabaseForTests(dbContext);
+    }
+
+    public static async Task ReinitializeDatabaseForTestsAsync(ShoppingListContext dbContext)
+    {
+        dbContext.Items.RemoveRange(dbContext.Items);
+        await InitializeDatabaseForTestsAsync(dbContext);
     }
 
     public static IEnumerable<Item> GetTestItems()
