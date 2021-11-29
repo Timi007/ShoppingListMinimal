@@ -68,10 +68,12 @@ public static class ApiEndpoints
                 throw new StatusCodeException(StatusCodes.Status400BadRequest, "Could not parse limit query parameter to integer");
             }
 
-            return await dbContext.Items
+            var items = await dbContext.Items
                 .OrderByDescending(item => item.Created)
                 .Take(limit)
                 .ToListAsync();
+
+            return Results.Ok(items);
         });
 
         // POST /items
@@ -80,8 +82,7 @@ public static class ApiEndpoints
             await dbContext.AddAsync(shoppingListItem);
             await dbContext.SaveChangesAsync();
 
-            context.Response.StatusCode = StatusCodes.Status201Created;
-            return shoppingListItem;
+            return Results.Created($"/items/{shoppingListItem.Id}", shoppingListItem);
         });
 
         // Endpoint not found
