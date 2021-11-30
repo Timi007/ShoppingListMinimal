@@ -7,11 +7,14 @@ namespace ShoppingListMinimal;
 
 public static class ApiEndpoints
 {
-    public static IServiceCollection AddShoppingListApi(this IServiceCollection services)
+    public static WebApplicationBuilder AddShoppingListApi(this WebApplicationBuilder builder)
     {
-        services.AddDbContext<ShoppingListContext>(o => o.UseInMemoryDatabase(databaseName: "ShoppingList"));
+        //builder.Services.AddDbContext<ShoppingListContext>(o => o.UseInMemoryDatabase(databaseName: "ShoppingList"));
 
-        return services;
+        builder.Services.AddDbContext<ShoppingListContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("ShoppingList")));
+
+        return builder;
     }
 
     public static WebApplication UseShoppingListExceptionHandler(this WebApplication app)

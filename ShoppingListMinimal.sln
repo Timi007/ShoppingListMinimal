@@ -5,7 +5,12 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoppingListMinimal", "ShoppingListMinimal\ShoppingListMinimal.csproj", "{8E303132-6BA8-49BD-9C52-0B4F3CFC9D64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingListMinimal.Tests", "ShoppingListMinimal.Tests\ShoppingListMinimal.Tests.csproj", "{8A41F10C-F2D3-4000-AD5F-482F9552C9C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoppingListMinimal.Tests", "ShoppingListMinimal.Tests\ShoppingListMinimal.Tests.csproj", "{8A41F10C-F2D3-4000-AD5F-482F9552C9C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{466607BC-C920-49B2-865A-30D3FA03BD42}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

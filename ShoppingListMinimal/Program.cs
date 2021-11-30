@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using ShoppingListMinimal;
 
 // Setup application
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();
 
-builder.Services.AddShoppingListApi();
+builder.AddShoppingListApi();
 
 // Create the app
 var app = builder.Build();

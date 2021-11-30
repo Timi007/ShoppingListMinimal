@@ -1,0 +1,39 @@
+version: "3.9"
+
+# Start with
+# docker compose -p shoppinglist up --build api
+
+services:
+    db:
+        image: timi007/shoppinglistdatabase:latest
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: my_user
+            POSTGRES_PASSWORD: my_password
+
+    pgadmin:
+        profiles:
+            - "pgadmin"
+        image: dpage/pgadmin4
+        environment:
+            PGADMIN_DEFAULT_EMAIL: my_user@example.com
+            PGADMIN_DEFAULT_PASSWORD: my_password
+        ports:
+            - "5050:80"
+        depends_on:
+            - db
+        links:
+            - "db:psqlserver"
+
+    api:
+        build:
+            context: .
+            dockerfile: .\ShoppingListMinimal\Dockerfile
+        ports:
+            - "5000:5000"
+        depends_on:
+            - db
+        links:
+            - "db:psqlserver"
+  
