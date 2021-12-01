@@ -55,7 +55,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
 
         var itemsInDatabase = await dbContext.Items
-            .OrderByDescending(i => i.Complete)
+            .OrderByDescending(item => item.Created)
             .Take(takeItems)
             .ToListAsync();
 
