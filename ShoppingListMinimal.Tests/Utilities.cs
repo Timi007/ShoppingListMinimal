@@ -35,8 +35,8 @@ internal class Utilities
 
     public static IEnumerable<Item> GetTestItems()
     {
-        yield return new Item() { Id = 1, Name = "Milk", Quantity = 3, Complete = false, Created = new DateTime(2021, 11, 25) };
-        yield return new Item() { Id = 2, Name = "Sugar", Quantity = 1, Complete = true, Created = new DateTime(2021, 10, 10) };
-        yield return new Item() { Id = 3, Name = "Coke", Quantity = 6, Complete = false, Created = new DateTime(2021, 10, 6) };
+        yield return new Item() { Name = "Milk", Quantity = 3, Complete = false, Created = new DateTime(2021, 11, 25) };
+        yield return new Item() { Name = "Sugar", Quantity = 1, Complete = true, Created = new DateTime(2021, 10, 10) };
+        yield return new Item() { Name = "Coke", Quantity = 6, Complete = false, Created = new DateTime(2021, 10, 6) };
     }
 }

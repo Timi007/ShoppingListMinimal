@@ -90,6 +90,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         // Arrange
         var newItem = new Item()
         {
+            Id = 575,
             Name = "Water",
             Quantity = 19,
             Created = new DateTime(2021, 11, 22),
@@ -117,6 +118,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         // Arrange
         var newItem = new
         {
+            Id = 575,
             Name = "Water",
             Quantity = 19,
             Created = "11.06.2021",
@@ -182,12 +184,11 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         using var scope = scopeFactory.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
 
-        var id = 1;
-        var itemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == id);
+        var itemFromDatabase = await dbContext.Items.FirstAsync();
 
         var modifiedItem = new Item()
         {
-            Id = id,
+            Id = itemFromDatabase.Id,
             Name = "Bread",
             Quantity = 6,
             Created = itemFromDatabase.Created,
@@ -195,7 +196,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/items/{id}", modifiedItem);
+        var response = await _client.PutAsJsonAsync($"/items/{itemFromDatabase.Id}", modifiedItem);
         var item = await response.ReadAsAsync<Item>();
 
         // Assert
@@ -203,9 +204,6 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
 
         item.Should().NotBeEquivalentTo(itemFromDatabase);
         item.Should().BeEquivalentTo(modifiedItem);
-
-        await dbContext.Entry(itemFromDatabase).ReloadAsync();
-        item.Should().BeEquivalentTo(itemFromDatabase);
 
         // Cleanup
         await ResetDatabase();
@@ -219,13 +217,11 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         using var scope = scopeFactory.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
 
-        var id = 1;
-        var routeId = 3;
-        var itemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == id);
+        var itemFromDatabase = await dbContext.Items.FirstAsync();
 
         var modifiedItem = new Item()
         {
-            Id = id,
+            Id = itemFromDatabase.Id + 1,
             Name = "Bread",
             Quantity = 6,
             Created = itemFromDatabase.Created,
@@ -233,7 +229,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/items/{routeId}", modifiedItem);
+        var response = await _client.PutAsJsonAsync($"/items/{itemFromDatabase.Id}", modifiedItem);
         var apiResponse = await response.ReadAsAsync<ApiResponse>();
 
         // Assert
@@ -243,7 +239,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         apiResponse.Message.Should().Be(ConflictPhrase);
 
         // Item should stay the same
-        var updateItemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == id);
+        var updateItemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == itemFromDatabase.Id);
         itemFromDatabase.Should().BeEquivalentTo(updateItemFromDatabase);
     }
 
@@ -251,10 +247,14 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
     public async Task PutItems_ShouldReturn400_WhenBodyIsInvalid()
     {
         // Arrange
-        var id = 1;
+        var scopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
+        using var scope = scopeFactory.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
+
+        var itemFromDatabase = await dbContext.Items.LastAsync();
         var modifiedItem = new
         {
-            Id = id,
+            Id = itemFromDatabase.Id,
             Name = "Bread",
             Quantity = 6,
             Created = "11.06.2021",
@@ -262,7 +262,7 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/items/{id}", modifiedItem);
+        var response = await _client.PutAsJsonAsync($"/items/{itemFromDatabase.Id}", modifiedItem);
         var apiResponse = await response.ReadAsAsync<ApiResponse>();
 
         // Assert
@@ -276,7 +276,15 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
     public async Task PutItems_ShouldReturn404_WhenIdDoesNotExist()
     {
         // Arrange
-        var id = 65464;
+        var scopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
+        using var scope = scopeFactory.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
+
+        var lastItemFromDatabase = await dbContext.Items
+            .OrderByDescending(item => item.Id)
+            .FirstAsync();
+        var id = lastItemFromDatabase.Id + 100; // Should not exist
+
         var modifiedItem = new Item()
         {
             Id = id,
@@ -301,16 +309,14 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
     public async Task DeleteItems_ShouldReturn200_WhenIdExistsAndDeleted()
     {
         // Arrange
-        var id = 2;
-
         var scopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
         using var scope = scopeFactory.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
 
-        var deletedItem = await dbContext.Items.SingleAsync(i => i.Id == id);
+        var deletedItem = await dbContext.Items.FirstAsync();
 
         // Act
-        var response = await _client.DeleteAsync($"/items/{id}");
+        var response = await _client.DeleteAsync($"/items/{deletedItem.Id}");
         var item = await response.ReadAsAsync<Item>();
 
         // Assert
@@ -329,7 +335,14 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
     public async Task DeleteItems_ShouldReturn200_WhenIdDoesNotExist()
     {
         // Arrange
-        var id = 4812;
+        var scopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
+        using var scope = scopeFactory.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ShoppingListContext>();
+
+        var lastItemFromDatabase = await dbContext.Items
+            .OrderByDescending(item => item.Id)
+            .FirstAsync();
+        var id = lastItemFromDatabase.Id + 100; // Should not exist
 
         // Act
         var response = await _client.DeleteAsync($"/items/{id}");
