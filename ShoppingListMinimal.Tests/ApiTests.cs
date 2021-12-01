@@ -237,10 +237,10 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         var apiResponse = await response.ReadAsAsync<ApiResponse>();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
 
-        apiResponse.StatusCode.Should().Be((int)HttpStatusCode.Conflict);
-        apiResponse.Message.Should().Be(ConflictPhrase);
+        apiResponse.StatusCode.Should().Be((int)HttpStatusCode.MethodNotAllowed);
+        apiResponse.Message.Should().Be("Method Not Allowed");
 
         // Item should stay the same
         var updateItemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == id);

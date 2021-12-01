@@ -12,7 +12,7 @@ public static class ApiEndpoints
         //builder.Services.AddDbContext<ShoppingListContext>(o => o.UseInMemoryDatabase(databaseName: "ShoppingList"));
 
         builder.Services.AddDbContext<ShoppingListContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("ShoppingList")));
+           options.UseNpgsql(builder.Configuration.GetConnectionString("ShoppingList")));
 
         return builder;
     }
@@ -92,6 +92,56 @@ public static class ApiEndpoints
         builder.MapFallback((HttpContext context) =>
         {
             throw new StatusCodeException(StatusCodes.Status404NotFound, $"Could not find resource \"{context.Request.Path}\"");
+        });
+
+
+        builder.MapGet("/items/{itemId}", async (int itemId, HttpContext context, ShoppingListContext dbContext) =>
+        {
+
+            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
+
+            if (item is null)
+            {
+                throw new StatusCodeException(StatusCodes.Status404NotFound, "Item not found");
+            }
+
+            return Results.Ok(item);
+        });
+
+        builder.MapPut("/items/{itemId}", async (int itemId, Item updatedItem, HttpContext context, ShoppingListContext dbContext) =>
+        {
+            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
+
+            if (item is null)
+            {
+                throw new StatusCodeException(StatusCodes.Status404NotFound, "Item not found");
+            }
+
+            if (item.Id != updatedItem.Id)
+            {
+                throw new StatusCodeException(StatusCodes.Status405MethodNotAllowed, "Item id in path does not match with id in body.");
+            }
+
+            item.Name = updatedItem.Name;
+            item.Quantity = updatedItem.Quantity;
+
+            await dbContext.SaveChangesAsync();
+
+            return Results.Ok(item);
+        });
+
+        builder.MapDelete("/items/{itemId}", async (int itemId, HttpContext context, ShoppingListContext dbContext) =>
+        {
+
+            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
+
+            if (item != null)
+            {
+                dbContext.Remove(item);
+            }
+
+            await dbContext.SaveChangesAsync();
+            return Results.Ok(item);
         });
 
         return builder;
