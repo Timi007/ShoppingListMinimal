@@ -3,6 +3,11 @@ version: "3.9"
 # Start with
 # docker compose -p shoppinglist up --build api
 
+volumes:
+    pgdata:
+    pgadmindata:
+
+
 services:
     db:
         image: timi007/shoppinglistdatabase:latest
@@ -11,6 +16,8 @@ services:
         environment:
             POSTGRES_USER: my_user
             POSTGRES_PASSWORD: my_password
+        volumes:
+          - pgdata:/var/lib/postgresql/data
 
     pgadmin:
         profiles:
@@ -25,11 +32,14 @@ services:
             - db
         links:
             - "db:psqlserver"
+        volumes:
+          - pgadmindata:/var/lib/pgadmin
 
     api:
         build:
             context: .
             dockerfile: .\ShoppingListMinimal\Dockerfile
+        image: timi007/shoppinglistapi:latest
         environment:
             ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
             Logging__LogLevel__Default: Information
