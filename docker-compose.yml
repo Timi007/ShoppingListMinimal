@@ -30,6 +30,9 @@ services:
         build:
             context: .
             dockerfile: .\ShoppingListMinimal\Dockerfile
+        environment:
+            ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
+            Logging__LogLevel__Default: Information
         ports:
             - "5000:5000"
         depends_on:

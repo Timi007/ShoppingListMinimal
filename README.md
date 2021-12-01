@@ -4,16 +4,13 @@ University project about containerization of REST API
 
 ## Getting started
 
-Change credentials in `docker-compose.yml`
+Change credentials and connection string to the database in `docker-compose.yml`
 ```yml
 POSTGRES_USER: my_user
 POSTGRES_PASSWORD: my_password
 ```
-And in the `ShoppingListMinimal\appsettings.json`:
-```json
-"ConnectionStrings": {
-    "ShoppingList": "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
-}
+```yml
+ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
 ```
 
 After configuring run following to start all containers:
@@ -23,7 +20,7 @@ docker compose -p shoppinglist up
 
 
 If API was changed after the container was setup, run following to rebuild it:
-```
+```bash
 docker compose -p shoppinglist up --build api
 ```
 
@@ -38,7 +35,7 @@ PGADMIN_DEFAULT_PASSWORD: my_password
 ```
 
 Then start the containers:
-```
+```bash
 docker compose -p shoppinglist --profile pgadmin up
 ```
 
@@ -46,3 +43,31 @@ You can then connect to the database with following values:
 - Hostname: psqlserver
 - Username: *Value of `POSTGRES_USER`*
 - Password: *Value of `POSTGRES_PASSWORD`*
+
+## Connection string
+
+The connection string can be defined in two locations: `docker-compose.yml` or `ShoppingListMinimal\appsettings.json`. The YML file has priority.
+
+`docker-compose.yml`:
+```yml
+ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
+```
+
+`ShoppingListMinimal\appsettings.json`:
+```json
+"ConnectionStrings": {
+    "ShoppingList": "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
+}
+```
+
+## Build docker image without docker compose
+
+Execute where `ShoppingListMinimal.sln` is located (root project folder) and replace version:
+```bash
+docker build -t timi007/shoppinglistapi:0.1 -t timi007/shoppinglistapi:latest -f .\ShoppingListMinimal\Dockerfile .
+```
+
+Run container standalone without DB:
+```bash
+docker run -d --name shoppinglistapi -p 5000:5000 -e ConnectionStrings__ShoppingList="Host=db_host;Database=ShoppingList;Username=my_user;Password=my_password" timi007/shoppinglistapi:latest
+```
