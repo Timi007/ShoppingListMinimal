@@ -80,7 +80,7 @@ public static class ApiEndpoints
         });
 
         // POST /items
-        builder.MapPost("/items", async (HttpContext context, ShoppingListContext dbContext, Item shoppingListItem) =>
+        builder.MapPost("/items", async (ShoppingListContext dbContext, Item shoppingListItem) =>
         {
             await dbContext.AddAsync(shoppingListItem);
             await dbContext.SaveChangesAsync();
@@ -88,38 +88,36 @@ public static class ApiEndpoints
             return Results.Created($"/items/{shoppingListItem.Id}", shoppingListItem);
         });
 
-        // Endpoint not found
-        builder.MapFallback((HttpContext context) =>
+        // GET /items/{itemId}
+        builder.MapGet("/items/{itemId}", async (long itemId, ShoppingListContext dbContext) =>
         {
-            throw new StatusCodeException(StatusCodes.Status404NotFound, $"Could not find resource \"{context.Request.Path}\"");
-        });
+            var item = await dbContext.Items
+                .Where(item => item.Id == itemId)
+                .FirstOrDefaultAsync();
 
-
-        builder.MapGet("/items/{itemId}", async (long itemId, HttpContext context, ShoppingListContext dbContext) =>
-        {
-
-            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
-
-            if (item is null)
+            if (item == null)
             {
-                throw new StatusCodeException(StatusCodes.Status404NotFound, "Item not found");
+                throw new StatusCodeException(StatusCodes.Status404NotFound, $"Item with id {itemId} does not exist.");
             }
 
             return Results.Ok(item);
         });
 
-        builder.MapPut("/items/{itemId}", async (long itemId, Item updatedItem, HttpContext context, ShoppingListContext dbContext) =>
+        // PUT /items/{itemId}
+        builder.MapPut("/items/{itemId}", async (long itemId, Item updatedItem, ShoppingListContext dbContext) =>
         {
-            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
+            var item = await dbContext.Items
+                .Where(item => item.Id == itemId)
+                .FirstOrDefaultAsync();
 
-            if (item is null)
+            if (item == null)
             {
-                throw new StatusCodeException(StatusCodes.Status404NotFound, "Item not found");
+                throw new StatusCodeException(StatusCodes.Status404NotFound, $"Item with id {itemId} does not exist.");
             }
 
-            if (item.Id != updatedItem.Id)
+            if (itemId != updatedItem.Id)
             {
-                throw new StatusCodeException(StatusCodes.Status409Conflict, "Item id in path does not match with id in body.");
+                throw new StatusCodeException(StatusCodes.Status409Conflict, $"Item id {itemId} in path does not match with id {updatedItem.Id} in body.");
             }
 
             item.Name = updatedItem.Name;
@@ -132,18 +130,29 @@ public static class ApiEndpoints
             return Results.Ok(item);
         });
 
-        builder.MapDelete("/items/{itemId}", async (int itemId, HttpContext context, ShoppingListContext dbContext) =>
+        // DELETE /items/{itemId}
+        builder.MapDelete("/items/{itemId}", async (long itemId, ShoppingListContext dbContext) =>
         {
 
-            var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
+            var item = await dbContext.Items
+                .Where(item => item.Id == itemId)
+                .FirstOrDefaultAsync();
 
-            if (item != null)
+            if (item == null)
             {
-                dbContext.Remove(item);
+                return Results.Ok();
             }
 
+            dbContext.Remove(item);
             await dbContext.SaveChangesAsync();
+
             return Results.Ok(item);
+        });
+
+        // Endpoint not found
+        builder.MapFallback((HttpContext context) =>
+        {
+            throw new StatusCodeException(StatusCodes.Status404NotFound, $"Could not find resource \"{context.Request.Path}\"");
         });
 
         return builder;
