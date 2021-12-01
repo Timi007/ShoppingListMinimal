@@ -119,7 +119,7 @@ public static class ApiEndpoints
 
             if (item.Id != updatedItem.Id)
             {
-                throw new StatusCodeException(StatusCodes.Status405MethodNotAllowed, "Item id in path does not match with id in body.");
+                throw new StatusCodeException(StatusCodes.Status409Conflict, "Item id in path does not match with id in body.");
             }
 
             item.Name = updatedItem.Name;
