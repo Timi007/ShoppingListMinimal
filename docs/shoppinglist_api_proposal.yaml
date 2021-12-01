@@ -154,7 +154,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFound'
-        405:
+        409:
           description: Mismatched ids
           content:
             application/json:
