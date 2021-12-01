@@ -204,8 +204,8 @@ public class ApiTests : IClassFixture<ShoppingListFactory>
         item.Should().NotBeEquivalentTo(itemFromDatabase);
         item.Should().BeEquivalentTo(modifiedItem);
 
-        var updateItemFromDatabase = await dbContext.Items.SingleAsync(i => i.Id == id);
-        item.Should().BeEquivalentTo(updateItemFromDatabase);
+        await dbContext.Entry(itemFromDatabase).ReloadAsync();
+        item.Should().BeEquivalentTo(itemFromDatabase);
 
         // Cleanup
         await ResetDatabase();

@@ -22,22 +22,21 @@ internal class Utilities
     public static void ReinitializeDatabaseForTests(ShoppingListContext dbContext)
     {
         dbContext.Items.RemoveRange(dbContext.Items);
+        dbContext.SaveChanges();
         InitializeDatabaseForTests(dbContext);
     }
 
     public static async Task ReinitializeDatabaseForTestsAsync(ShoppingListContext dbContext)
     {
         dbContext.Items.RemoveRange(dbContext.Items);
+        await dbContext.SaveChangesAsync();
         await InitializeDatabaseForTestsAsync(dbContext);
     }
 
     public static IEnumerable<Item> GetTestItems()
     {
-        return new List<Item>() 
-        { 
-            new Item(){Name = "Milk", Quantity = 3, Complete = false, Created = new DateTime(2021, 11, 25)},
-            new Item(){Name = "Sugar", Quantity = 1, Complete = true, Created = new DateTime(2021, 10, 10)},
-            new Item(){Name = "Coke", Quantity = 6, Complete = false, Created = new DateTime(2021, 10, 6)},
-        };
+        yield return new Item() { Id = 1, Name = "Milk", Quantity = 3, Complete = false, Created = new DateTime(2021, 11, 25) };
+        yield return new Item() { Id = 2, Name = "Sugar", Quantity = 1, Complete = true, Created = new DateTime(2021, 10, 10) };
+        yield return new Item() { Id = 3, Name = "Coke", Quantity = 6, Complete = false, Created = new DateTime(2021, 10, 6) };
     }
 }
