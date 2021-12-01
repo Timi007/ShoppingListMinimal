@@ -95,7 +95,7 @@ public static class ApiEndpoints
         });
 
 
-        builder.MapGet("/items/{itemId}", async (int itemId, HttpContext context, ShoppingListContext dbContext) =>
+        builder.MapGet("/items/{itemId}", async (long itemId, HttpContext context, ShoppingListContext dbContext) =>
         {
 
             var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
@@ -108,7 +108,7 @@ public static class ApiEndpoints
             return Results.Ok(item);
         });
 
-        builder.MapPut("/items/{itemId}", async (int itemId, Item updatedItem, HttpContext context, ShoppingListContext dbContext) =>
+        builder.MapPut("/items/{itemId}", async (long itemId, Item updatedItem, HttpContext context, ShoppingListContext dbContext) =>
         {
             var item = await dbContext.Items.Where(item => item.Id == itemId).FirstOrDefaultAsync();
 
@@ -124,6 +124,8 @@ public static class ApiEndpoints
 
             item.Name = updatedItem.Name;
             item.Quantity = updatedItem.Quantity;
+            item.Complete = updatedItem.Complete;
+            item.Created = updatedItem.Created;
 
             await dbContext.SaveChangesAsync();
 
