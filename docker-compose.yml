@@ -38,7 +38,7 @@ services:
     api:
         build:
             context: .
-            dockerfile: .\ShoppingListMinimal\Dockerfile
+            dockerfile: ./ShoppingListMinimal/Dockerfile
         image: timi007/shoppinglistapi:latest
         environment:
             ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
