@@ -15,13 +15,13 @@ ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username
 
 After configuring run following to start all containers:
 ```bash
-docker compose -p shoppinglist up
+docker compose -d -p shoppinglist up
 ```
 
 
 If API was changed after the container was setup, run following to rebuild it:
 ```bash
-docker compose -p shoppinglist up --build api
+docker compose -d -p shoppinglist up --build api
 ```
 
 ## pgAdmin 4
@@ -39,21 +39,21 @@ Then start the containers:
 docker compose -p shoppinglist --profile pgadmin up
 ```
 
-You can then connect to the database with following values:
+You can now connect to the database with following values:
 - Hostname: psqlserver
 - Username: *Value of `POSTGRES_USER`*
 - Password: *Value of `POSTGRES_PASSWORD`*
 
 ## Connection string
 
-The connection string can be defined in two locations: `docker-compose.yml` or `ShoppingListMinimal\appsettings.json`. The YML file has priority.
+The connection string can be defined in two locations: `docker-compose.yml` or `ShoppingListMinimal/appsettings.json`. The YML file has priority.
 
 `docker-compose.yml`:
 ```yml
 ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
 ```
 
-`ShoppingListMinimal\appsettings.json`:
+`ShoppingListMinimal/appsettings.json`:
 ```json
 "ConnectionStrings": {
     "ShoppingList": "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
@@ -62,12 +62,12 @@ ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username
 
 ## Build docker image without docker compose
 
-Execute where `ShoppingListMinimal.sln` is located (root project folder) and replace version:
+Build image where `ShoppingListMinimal.sln` is located (root project folder):
 ```bash
-docker build -t timi007/shoppinglistapi:0.1 -t timi007/shoppinglistapi:latest -f .\ShoppingListMinimal\Dockerfile .
+docker build -t timi007/shoppinglistapi:0.1 -t timi007/shoppinglistapi:latest -f ./ShoppingListMinimal/Dockerfile .
 ```
 
-Run container standalone without DB:
+To run container without database:
 ```bash
 docker run -d --name shoppinglistapi -p 5000:5000 -e ConnectionStrings__ShoppingList="Host=db_host;Database=ShoppingList;Username=my_user;Password=my_password" timi007/shoppinglistapi:latest
 ```
