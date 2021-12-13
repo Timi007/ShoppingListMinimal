@@ -1,16 +1,31 @@
 # Shopping List
 
-University project about containerization of REST API
+<p align="center">
+    <a href="https://hub.docker.com/r/timi007/shoppinglistapi">
+        <img alt="Docker" src="https://badgen.net/badge/icon/docker?icon=docker&label">
+    </a>
+    <a href="https://hub.docker.com/r/timi007/shoppinglistapi">
+        <img alt="Docker Image Size" src="https://img.shields.io/docker/image-size/timi007/shoppinglistapi/latest">
+    </a>
+    <a href="https://hub.docker.com/r/timi007/shoppinglistapi">
+        <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/timi007/shoppinglistapi">
+    </a>
+    <a href="https://github.com/Timi007/ShoppingListMinimal/blob/master/LICENSE">
+        <img alt="GitHub" src="https://img.shields.io/github/license/Timi007/ShoppingListMinimal">
+    </a>
+    <img alt="Docker Image Version" src="https://img.shields.io/docker/v/timi007/shoppinglistapi/latest">
+</p>
+
+<p align="center">
+    University project about containerization of REST API.
+</p>
 
 ## Getting started
 
-Change credentials and connection string to the database in `docker-compose.yml`
-```yml
-POSTGRES_USER: my_user
-POSTGRES_PASSWORD: my_password
-```
-```yml
-ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
+Change credentials of the database in `.env`:
+```env
+DB_USER=my_user
+DB_PASSWORD=my_password
 ```
 
 After configuring run following to start all containers:
@@ -18,40 +33,40 @@ After configuring run following to start all containers:
 docker compose -d -p shoppinglist up
 ```
 
+The API will start listing on port `5000` (or whatever was set in `.env`).
 
-If API was changed after the container was setup, run following to rebuild it:
+## Run API without docker compose
+
+To run container without database:
 ```bash
-docker compose -d -p shoppinglist up --build api
+docker run -d --name shoppinglistapi -p 5000:5000 -e ConnectionStrings__ShoppingList="Host=db_host;Database=ShoppingList;Username=my_user;Password=my_password" timi007/shoppinglistapi:latest
 ```
 
 ## pgAdmin 4
 
 The docker compose file provides an optional pgAdmin 4 profile.
 
-Change the credentials in `docker-compose.yml`:
-```yml
-PGADMIN_DEFAULT_EMAIL: my_user@example.com
-PGADMIN_DEFAULT_PASSWORD: my_password
+Change the credentials in `.env`:
+```env
+PGADMIN_EMAIL=my_user@example.com
+PGADMIN_PASSWORD=my_password
 ```
 
 Then start the containers:
 ```bash
-docker compose -p shoppinglist --profile pgadmin up
+docker compose -d -p shoppinglist --profile pgadmin up
 ```
 
-You can now connect to the database with following values:
+You can now open pgAdmin [http://localhost:5050/](http://localhost:5050/) and connect to the database with following values:
 - Hostname: psqlserver
-- Username: *Value of `POSTGRES_USER`*
-- Password: *Value of `POSTGRES_PASSWORD`*
+- Username: *Value of `DB_USER`*
+- Password: *Value of `DB_PASSWORD`*
 
-## Connection string
+## Additional information
 
-The connection string can be defined in two locations: `docker-compose.yml` or `ShoppingListMinimal/appsettings.json`. The YML file has priority.
+### Alternative location of the connection string
 
-`docker-compose.yml`:
-```yml
-ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username=my_user;Password=my_password"
-```
+The connection string can also be defined in `ShoppingListMinimal/appsettings.json`. The `.env` file has priority when using `docker compose`.
 
 `ShoppingListMinimal/appsettings.json`:
 ```json
@@ -60,14 +75,16 @@ ConnectionStrings__ShoppingList: "Host=psqlserver;Database=ShoppingList;Username
 }
 ```
 
-## Build docker image without docker compose
+### Building docker image
 
 Build image where `ShoppingListMinimal.sln` is located (root project folder):
 ```bash
 docker build -t timi007/shoppinglistapi:0.1 -t timi007/shoppinglistapi:latest -f ./ShoppingListMinimal/Dockerfile .
 ```
 
-To run container without database:
+### Rebuild with docker compose
+
+If API was changed after the container was setup, run following to rebuild it:
 ```bash
-docker run -d --name shoppinglistapi -p 5000:5000 -e ConnectionStrings__ShoppingList="Host=db_host;Database=ShoppingList;Username=my_user;Password=my_password" timi007/shoppinglistapi:latest
+docker compose -d -p shoppinglist up --build api
 ```
