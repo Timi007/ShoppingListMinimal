@@ -30,7 +30,7 @@ DB_PASSWORD=my_password
 
 After configuring run following to start all containers:
 ```bash
-docker compose -d -p shoppinglist up
+docker compose -p shoppinglist up -d
 ```
 
 The API will start listing on port `5000` (or whatever was set in `.env`).
@@ -54,7 +54,7 @@ PGADMIN_PASSWORD=my_password
 
 Then start the containers:
 ```bash
-docker compose -d -p shoppinglist --profile pgadmin up
+docker compose -p shoppinglist --profile pgadmin up -d
 ```
 
 You can now open pgAdmin [http://localhost:5050/](http://localhost:5050/) and connect to the database with following values:
@@ -86,5 +86,5 @@ docker build -t timi007/shoppinglistapi:0.1 -t timi007/shoppinglistapi:latest -f
 
 If API was changed after the container was setup, run following to rebuild it:
 ```bash
-docker compose -d -p shoppinglist up --build api
+docker compose -p shoppinglist up --build api -d
 ```

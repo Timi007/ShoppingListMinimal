@@ -1,7 +1,7 @@
 version: "3.9"
 
 # Start with
-# docker compose -d -p shoppinglist up --build api
+# docker compose -p shoppinglist up --build api -d
 
 volumes:
     pgdata:
