@@ -28,7 +28,7 @@ docker run -d -p 5432:5432 -e POSTGRES_USER=my_user -e POSTGRES_PASSWORD=my_pass
     kubectl create secret generic shoppinglistdb --from-literal=connection_string="Host=shoppinglistdatabase;Database=ShoppingList;Username=my_user;Password=my_password"
     ```
 
-2. Setup database service so pods can access external database. **Change IP in `.yaml` to external database first!**  
+2. Setup database service so pods can access external database. **Change IP in `k8s_service_shoppinglistdatabase.yaml` to external database first!**  
     IP *must not* be loopback (127.0.0.0/8 for IPv4, ::1/128 for IPv6), or link-local (169.254.0.0/16 and 224.0.0.0/24 for IPv4, fe80::/64 for IPv6).
     ```yaml
     subsets: 
