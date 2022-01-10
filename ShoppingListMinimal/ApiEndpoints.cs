@@ -154,6 +154,12 @@ public static class ApiEndpoints
             return Results.Ok(item);
         });
 
+        // Kill switch
+        builder.MapGet("/fail", () =>
+        {
+            Environment.FailFast("A catastrophic failure in the shopping list has occurred.");
+        });
+
         // Endpoint not found
         builder.MapFallback((HttpContext context) =>
         {
