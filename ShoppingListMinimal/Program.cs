@@ -7,19 +7,17 @@ builder.Logging.AddConsole();
 
 builder.AddShoppingListApi();
 
-builder.Services.AddHealthChecks();
-
 // Create the app
 var app = builder.Build();
 
 app.UseShoppingListExceptionHandler();
 
-app.MapShoppingListApiRoutes();
-
 app.UseHealthChecks("/health", new HealthCheckOptions
 {
     AllowCachingResponses = false
 });
+
+app.MapShoppingListApiRoutes();
 
 app.Run();
 

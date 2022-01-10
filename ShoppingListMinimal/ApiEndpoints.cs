@@ -11,8 +11,13 @@ public static class ApiEndpoints
     {
         //builder.Services.AddDbContext<ShoppingListContext>(o => o.UseInMemoryDatabase(databaseName: "ShoppingList"));
 
+        var connectionString = builder.Configuration.GetConnectionString("ShoppingList");
+
         builder.Services.AddDbContext<ShoppingListContext>(options =>
-           options.UseNpgsql(builder.Configuration.GetConnectionString("ShoppingList")));
+           options.UseNpgsql(connectionString));
+
+        builder.Services.AddHealthChecks()
+            .AddNpgSql(connectionString);
 
         return builder;
     }
