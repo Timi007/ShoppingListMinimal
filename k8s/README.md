@@ -13,6 +13,14 @@ Change to it:
 kubectl config set-context --current --namespace=shoppinglist
 ```
 
+### Database
+
+It is required that an external PostgreSQL database must run.
+Use this for testing purposes. Don't forget to change the credentials.
+```
+docker run -d -p 5432:5432 -e POSTGRES_USER=my_user -e POSTGRES_PASSWORD=my_password --name shoppinglistdatabase timi007/shoppinglistdatabase:latest
+```
+
 ### Deploying API
 
 1. First create a secret containing the connection string to the external running database. Change `Username` and `Password` to database credentials:
