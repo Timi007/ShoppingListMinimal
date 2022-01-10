@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: shoppinglistdatabase
+  name: shoppinglistdatabase
+spec:
+  clusterIP: None
+  ports:
+  - port: 5432
+
+---
+
+apiVersion: v1 
+kind: Endpoints 
+metadata:
+  creationTimestamp: null
+  labels:
+    app: shoppinglistdatabase
+  name: shoppinglistdatabase
+subsets: 
+  - addresses: 
+      - ip: 192.168.2.108 # Change this ip to external database
+    ports: 
+      - name: shoppinglistdatabase
+        port: 5432
+        
