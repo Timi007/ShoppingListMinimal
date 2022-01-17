@@ -8,6 +8,7 @@ Optionally create a namespace first:
 ```bash
 kubectl create namespace shoppinglist
 ```
+
 Change to it:
 ```bash
 kubectl config set-context --current --namespace=shoppinglist
@@ -17,7 +18,8 @@ kubectl config set-context --current --namespace=shoppinglist
 
 It is required that an external PostgreSQL database must run.
 Use this for testing purposes. Don't forget to change the credentials.
-```
+
+```bash
 docker run -d -p 5432:5432 -e POSTGRES_USER=my_user -e POSTGRES_PASSWORD=my_password --name shoppinglistdatabase timi007/shoppinglistdatabase:latest
 ```
 
@@ -35,7 +37,7 @@ docker run -d -p 5432:5432 -e POSTGRES_USER=my_user -e POSTGRES_PASSWORD=my_pass
     - addresses: 
         - ip: 192.168.2.108 # Change this ip to external database
     ```
-    After you can deploy the service:
+    After that you can deploy the service:
     ```bash
     kubectl apply -f ./k8s_service_shoppinglistdatabase.yaml
     ```

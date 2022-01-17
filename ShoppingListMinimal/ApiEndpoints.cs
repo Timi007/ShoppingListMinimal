@@ -66,14 +66,13 @@ public static class ApiEndpoints
         // GET /items
         builder.MapGet("/items", async (HttpContext context, ShoppingListContext dbContext) =>
         {
-            if (!context.Request.Query.TryGetValue("limit", out var limitString))
+            var limit = 100;
+            if (context.Request.Query.TryGetValue("limit", out var limitString))
             {
-                throw new StatusCodeException(StatusCodes.Status400BadRequest, "Missing limit query parameter");
-            }
-
-            if (!int.TryParse(limitString, out var limit))
-            {
-                throw new StatusCodeException(StatusCodes.Status400BadRequest, "Could not parse limit query parameter to integer");
+                if (!int.TryParse(limitString, out limit))
+                {
+                    throw new StatusCodeException(StatusCodes.Status400BadRequest, "Could not parse limit query parameter to integer");
+                }
             }
 
             var items = await dbContext.Items
@@ -87,6 +86,16 @@ public static class ApiEndpoints
         // POST /items
         builder.MapPost("/items", async (ShoppingListContext dbContext, Item shoppingListItem) =>
         {
+            if (shoppingListItem.Name == null)
+            {
+                throw new StatusCodeException(StatusCodes.Status400BadRequest, "Item name must be set");
+            }
+
+            if (shoppingListItem.Created == default)
+            {
+                shoppingListItem.Created = DateTime.UtcNow;
+            }
+
             await dbContext.AddAsync(shoppingListItem);
             await dbContext.SaveChangesAsync();
 
