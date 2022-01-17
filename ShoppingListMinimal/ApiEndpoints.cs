@@ -93,7 +93,7 @@ public static class ApiEndpoints
 
             if (shoppingListItem.Created == default)
             {
-                shoppingListItem.Created = DateTime.UtcNow;
+                shoppingListItem.Created = DateTime.Now;
             }
 
             await dbContext.AddAsync(shoppingListItem);
