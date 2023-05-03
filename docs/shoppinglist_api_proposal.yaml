@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Shopping List
   description: 'This is a proposal for the Shopping List project.'
-  version: 1.0.2
+  version: 1.0.3
 servers:
 - url: http://localhost:5000
 tags:
@@ -53,7 +53,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ItemWithNoIdSet'
+              $ref: '#/components/schemas/Item'
         required: true
       responses:
         201:
@@ -82,20 +82,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerError'
           
   /items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/itemId'
     get:
       tags:
       - items
       summary: Find item in the shopping list by ID
       description: Returns a single Item
-      parameters:
-      - name: itemId
-        in: path
-        description: ID of the item to return
-        required: true
-        schema:
-          type: integer
-          format: int64
-          example: 6548004
+      
       responses:
         200:
           description: Successful operation
@@ -120,20 +114,12 @@ paths:
       - items
       summary: Update an item in the shopping list with body data
       description: If item ist not found, an error is returned. A new item will not be created.
-      parameters:
-      - name: itemId
-        in: path
-        description: ID of the item that needs to be updated
-        required: true
-        schema:
-          type: integer
-          format: int64
-          example: 6548004
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ItemUpdated'
+        required: true
       responses:
         200:
           description: Successful operation
@@ -169,15 +155,6 @@ paths:
       tags:
       - items
       summary: Delete an item in the shopping list
-      parameters:
-      - name: itemId
-        in: path
-        description: ID of the item that needs to be deleted
-        required: true
-        schema:
-          type: integer
-          format: int64
-          example: 6548004
       responses:
         200:
           description: Successful operation. Will be also returned, if item does not exist.
@@ -201,28 +178,7 @@ components:
           type: integer
           format: int64
           example: 6548004
-        name:
-          type: string
-          example: "Milk"
-        quantity:
-          type: integer
-          format: int32
-          example: 2
-        created:
-          type: string
-          format: YYYY-MM-DDThh:mm:ss
-          example: "2021-11-15T15:26:14"
-        complete:
-          type: boolean
-          default: false
-          example: false
-    ItemWithNoIdSet:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 0
+          readOnly: true
         name:
           type: string
           example: "Milk"
@@ -239,76 +195,70 @@ components:
           default: false
           example: false
     ItemUpdated:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/Item'
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 6548004
-        name:
-          type: string
-          example: "Milk"
-        quantity:
-          type: integer
-          format: int32
-          example: 10
-        created:
-          type: string
-          format: YYYY-MM-DDThh:mm:ss
-          example: "2021-11-15T15:26:14"
         complete:
-          type: boolean
-          default: false
           example: true
-    InternalServerError:
+
+    ErrorResponse:
       type: object
       properties:
         statusCode:
           type: integer
           format: int32
+        error:
+          type: string
+        message:
+          type: string
+    InternalServerError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+      properties:
+        statusCode:
           example: 500
         error:
-          type: string
           example: Internal Server Error
         message:
-          type: string
           example: Could not connect to Database.
     BadRequest:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
       properties:
         statusCode:
-          type: integer
-          format: int32
           example: 400
         error:
-          type: string
           example: Bad Request
         message:
-          type: string
           example: Invalid date format in 'created'.
     NotFound:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
       properties:
         statusCode:
-          type: integer
-          format: int32
           example: 404
         error:
-          type: string
           example: Not Found
         message:
-          type: string
           example: Item does not exist.
     Conflict:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
       properties:
         statusCode:
-          type: integer
-          format: int32
           example: 409
         error:
-          type: string
           example: Conflict
         message:
-          type: string
           example: Item id in path does not match with id in body.
+
+  parameters:
+    itemId:
+      name: itemId
+      in: path
+      description: ID of the item to return
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6548004
